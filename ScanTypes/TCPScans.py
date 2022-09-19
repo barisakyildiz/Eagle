@@ -1,4 +1,7 @@
 import socket
+import binascii
+from struct import *
+
 
 class TCPConnect:
     def __init__(self, ip):
@@ -92,6 +95,118 @@ class TCPConnect:
         for port in portslist:
             if self.isopen(port):
                 self.addport(port)
+
+class SYNPacket:
+    def __init__(self, hostip, target, port):
+
+        #IP segment of the packet
+        self.version = 0x4
+        self.ihl = 0x5
+        self.servicetype = 0x0
+        self.length = 0x28
+        self.id = 0xabcd
+        self.flag = 0x0
+        self.fragoffset = 0x0
+        self.ttl = 0x40
+        self.protocol = 0x6
+        self.headerChecksum = 0x0
+        self.hostip = hostip
+        self.target = target
+        self.srcaddr = socket.inet_aton(hostip)
+        self.destaddr = socket.inet_aton(target)
+        self.vIhl = (self.version << 4) + self.ihl
+        self.fFo = (self.flag << 13) + self.fragoffset
+
+        #TCP segment of the packet
+        self.hostport = 0x3039
+        self.port = port
+        self.seqNo = 0x0
+        self.ackNo = 0x0
+        self.dataOffset = 0x5
+        self.reserved = 0x0
+        self.ns, self.cwr, self.ece, self.urg, self.ack, self.psh, self.rst, self.syn, self.fin = 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0
+        self.windowSize = 0x7110
+        self.checksum = 0x0
+        self.urgPointer = 0x0
+        self.dataOffsetResFlags = (self.dataOffset << 12) + (self.reserved << 9) + (self.ns << 8) + (self.cwr << 7) + (self.ece << 6) + (self.urg << 5) + (self.ack << 4) + (self.psh << 3) + (self.rst << 2) + (self.syn << 1) + self.fin
+
+        self.tcpHeader = b""
+        self.ipHeader = b""
+        self.packet = b""
+
+        def calc_checksum(self, msg):
+            s = 0
+            for i in range(0, len(msg), 2):
+                w = (msg[i] << 8) + msg[i+1] 
+                s = s + w
+            s = (s >> 16) + (s & 0xffff)
+            s = ~s & 0xffff
+            return s
+        
+        def generate_tmp_ip_header(self):
+            tmpIpHeader = pack("!BBHHHBBH4s4s", self.vIhl, self.servicetype, self.length,
+                                                self.id, self.fFo,
+                                                self.ttl, self.protocol, self.headerChecksum,
+                                                self.hostip, self.target)
+            return tmpIpHeader
+
+        def generate_tmp_tcp_header(self):
+            tmpTcpHeader = pack("!HHLLHHHH", self.hostport, self.port,
+                                             self.seqNo, self.ackNo, self.dataOffsetResFlags,
+                                             self.windowSize, self.checksum, self.urgPointer)
+
+        def generate_packet(self):
+            #IP header + checksum
+            finalIpHeader = pack("!BBHHHBBH4s4s", self.vIhl, self.servicetype, self.length,
+                                                  self.id, self.fFo,
+                                                  self.ttl, self.protocol, self.calc_checksum(self.generate_tmp_ip_header()),
+                                                  self.hostip, self.target)
+
+            #TCP header + checksum
+            tmpTcpHeader = self.generate_tmp_tcp_header()
+            pseudoHeader = pack("!4s4sBBH", self.hostip, self.target, self.checksum, self.protocol, len(tmpTcpHeader))
+            psh = pseudoHeader + tmpTcpHeader
+            finalTcpHeader = pack("!HHLLHHHH", self.hostport, self.port,
+                                            self.seqNo, self.ackNo, self.dataOffsetResFlags,
+                                            self.windowSize, self.calc_checksum(psh), self.urgPointer)
+            
+            self.ipHeader = finalIpHeader
+            self.tcpHeader = finalTcpHeader
+            self.packet = finalIpHeader + finalTcpHeader
+        
+        def send_packet(self):
+            socket.setdefaulttimeout(0.00001)
+            s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+            s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+            s.sendto(self.packet, (self.target, 0))
+            data = s.recv(1024)
+            s.close()
+            return data
+
+class TCPSYN:
+    def __init__(self, ip):
+        self.ip = ip
+        self.open_ports = []
+    
+    def __repr__(self):
+        return "TCP SYN Scanner started for target: {}".format(self.ip)
+
+    def addport(self, port):
+        self.open_ports.append(port)
+
+    def isopen(port, response):
+        cont = binascii.hexlify(response)
+        if cont[65:68] == b"012":
+            return "OK"
+        else:
+            pass
+    
+    def writetofile(self, filepath):
+        openport = map(str, self.open_ports)
+        with open(filepath, 'w') as f:
+            f.write('\n'.join(openport))
+            
+
 
 def main():
     pass
