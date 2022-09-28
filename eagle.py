@@ -17,6 +17,8 @@ def main():
         (3) TCP Syn Port Scan\n")
     args = prsr.parse_args()
 
+    hostname = socket.gethostname()
+    hostip = socket.gethostbyname(hostname)
     ipadrr = str(args.target)
     if args.portrange:
         if args.scantype == "1":
@@ -24,6 +26,7 @@ def main():
             lowerport = int(portrangelist[0])
             higherport = int(portrangelist[1])
             TCPScanner = TCPScans.TCPConnect(ipadrr); TCPScanner.scanrange(lowerport, higherport)
+            print(TCPScanner.__repr__())
             for port in TCPScanner.open_ports:
                 try:
                     grabber = TCPGrabService.Grabservice(ipadrr, port)
@@ -32,10 +35,22 @@ def main():
                 except Exception as e:
                     print('Error on scanning port: {} >> {}'.format(port, e))
                     grabber.close()
-            del TCPScanner, grabber
+        elif args.scantype == "3":
+            print("SJ31")
+            portrangelist = str(args.portrange).split("-")
+            lowerport = int(portrangelist[0])
+            higherport = int(portrangelist[1])
+            TCPSyn = TCPScans.TCPSYN(ipadrr, hostip); TCPSyn.scanrange(lowerport, higherport)
+            print(TCPSyn.__repr__())
+            for port in TCPSyn.open_ports:
+                try:
+                    print('Port {} is open and running'.format(port))
+                except Exception as e:
+                    print('Error on scanning port: {} >> {}'.format(port, e))
     else:
         if args.scantype == "1":
             TCPScanner = TCPScans.TCPConnect(ipadrr); TCPScanner.scanfunc()
+            print(TCPScanner.__repr__())
             for port in TCPScanner.open_ports:
                 try:
                     grabber = TCPGrabService.Grabservice(ipadrr, port)
