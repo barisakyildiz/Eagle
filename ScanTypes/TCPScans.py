@@ -99,6 +99,7 @@ class TCPConnect:
 class SYNPacket:
     def __init__(self, hostip, target, port):
 
+
         #IP segment of the packet
         self.version = 0x4
         self.ihl = 0x5
@@ -134,54 +135,45 @@ class SYNPacket:
         self.ipHeader = b""
         self.packet = b""
 
-        def calc_checksum(self, msg):
-            s = 0
-            for i in range(0, len(msg), 2):
-                w = (msg[i] << 8) + msg[i+1] 
-                s = s + w
-            s = (s >> 16) + (s & 0xffff)
-            s = ~s & 0xffff
-            return s
+    def calc_checksum(self, msg):
+        s = 0
+        for i in range(0, len(msg), 2):
+            w = (msg[i] << 8) + msg[i+1] 
+            s = s + w
+        s = (s >> 16) + (s & 0xffff)
+        s = ~s & 0xffff
+        return s
         
-        def generate_tmp_ip_header(self):
-            tmpIpHeader = pack("!BBHHHBBH4s4s", self.vIhl, self.servicetype, self.length,
-                                                self.id, self.fFo,
-                                                self.ttl, self.protocol, self.headerChecksum,
-                                                self.hostip, self.target)
-            return tmpIpHeader
+    def generate_tmp_ip_header(self):
+        tmpIpHeader = pack("!BBHHHBBH4s4s", self.vIhl, self.servicetype, self.length, self.id, self.fFo, self.ttl, self.protocol, self.headerChecksum, bytes(self.hostip, 'utf-8'), bytes(self.target, 'utf-8'))
+        return tmpIpHeader
 
-        def generate_tmp_tcp_header(self):
-            tmpTcpHeader = pack("!HHLLHHHH", self.hostport, self.port,
-                                             self.seqNo, self.ackNo, self.dataOffsetResFlags,
-                                             self.windowSize, self.checksum, self.urgPointer)
+    def generate_tmp_tcp_header(self):
+        tmpTcpHeader = pack("!HHLLHHHH", self.hostport, self.port, self.seqNo, self.ackNo, self.dataOffsetResFlags, self.windowSize, self.checksum, self.urgPointer)
+        return tmpTcpHeader
 
-        def generate_packet(self):
-            #IP header + checksum
-            finalIpHeader = pack("!BBHHHBBH4s4s", self.vIhl, self.servicetype, self.length,
-                                                  self.id, self.fFo,
-                                                  self.ttl, self.protocol, self.calc_checksum(self.generate_tmp_ip_header()),
-                                                  self.hostip, self.target)
-
-            #TCP header + checksum
-            tmpTcpHeader = self.generate_tmp_tcp_header()
-            pseudoHeader = pack("!4s4sBBH", self.hostip, self.target, self.checksum, self.protocol, len(tmpTcpHeader))
-            psh = pseudoHeader + tmpTcpHeader
-            finalTcpHeader = pack("!HHLLHHHH", self.hostport, self.port,
-                                            self.seqNo, self.ackNo, self.dataOffsetResFlags,
-                                            self.windowSize, self.calc_checksum(psh), self.urgPointer)
+    def generatepacket(self):
+        #IP header + checksum
+        finalIpHeader = pack("!BBHHHBBH4s4s", self.vIhl, self.servicetype, self.length, self.id, self.fFo, self.ttl, self.protocol, self.calc_checksum(self.generate_tmp_ip_header()), bytes(self.hostip, 'utf-8'), bytes(self.target, 'utf-8'))
             
-            self.ipHeader = finalIpHeader
-            self.tcpHeader = finalTcpHeader
-            self.packet = finalIpHeader + finalTcpHeader
+        #TCP header + checksum
+        tmpTcpHeader = self.generate_tmp_tcp_header()
+        pseudoHeader = pack("!4s4sBBH", bytes(self.hostip, 'utf-8'), bytes(self.target, 'utf-8'), self.checksum, self.protocol, len(tmpTcpHeader))
+        psh = pseudoHeader + tmpTcpHeader
+        finalTcpHeader = pack("!HHLLHHHH", self.hostport, self.port, self.seqNo, self.ackNo, self.dataOffsetResFlags, self.windowSize, self.calc_checksum(psh), self.urgPointer)
+            
+        self.ipHeader = finalIpHeader
+        self.tcpHeader = finalTcpHeader
+        self.packet = finalIpHeader + finalTcpHeader
         
-        def send_packet(self):
-            socket.setdefaulttimeout(0.00001)
-            s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-            s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-            s.sendto(self.packet, (self.target, 0))
-            data = s.recv(1024)
-            s.close()
-            return data
+    def send_packet(self):
+        socket.setdefaulttimeout(0.00001)
+        s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+        s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+        s.sendto(self.packet, (self.target, 0))
+        data = s.recv(1024)
+        s.close()
+        return data
 
 class TCPSYN:
     def __init__(self, target, hostip):
@@ -210,9 +202,8 @@ class TCPSYN:
     def scanrange(self, lowerport, higherport):
         for port in range(lowerport, higherport + 1):
             synpacket = SYNPacket(self.hostip, self.target, port)
-            synpacket.generate_packet()
+            synpacket.generatepacket()
             response = synpacket.send_packet()
-            del synpacket
             if self.isopen(port, response):
                 self.addport(port)
     
@@ -291,6 +282,7 @@ class TCPSYN:
         61370,61412,61481,61550,61685,61961,62154,62287,62575,62677,62699,62958,63420,
         63555,64080,64481,64513,64590,64727,65024]
         """
+
         portslist = [1,3,4,6,7,9,13,17,19,20,21,22,23,24,25,26,30,32,33,37,42,43,49,53,70,
         79,80,81,82,83,84,85,88,89,90,99,100,106,109,110,111,113,119,125,135,139,143,144,146,
         161,163,179,199,211,212,222,254,255,256,259,264,280,301,306,311,340,366,389,406,407,
@@ -353,7 +345,7 @@ class TCPSYN:
         65129,65389]
         for port in portslist:
             synpacket = SYNPacket(self.hostip, self.target, port)
-            synpacket.generate_packet()
+            synpacket.generatepacket()
             response = synpacket.send_packet()
             del synpacket
             if self.isopen(port, response):
