@@ -166,6 +166,7 @@ class SYNPacket:
         self.tcpHeader = finalTcpHeader
         self.packet = finalIpHeader + finalTcpHeader
         
+    #Continue on linux    
     def send_packet(self):
         socket.setdefaulttimeout(0.00001)
         s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)

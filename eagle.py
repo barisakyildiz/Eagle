@@ -36,7 +36,6 @@ def main():
                     print('Error on scanning port: {} >> {}'.format(port, e))
                     grabber.close()
         elif args.scantype == "3":
-            print("SJ31")
             portrangelist = str(args.portrange).split("-")
             lowerport = int(portrangelist[0])
             higherport = int(portrangelist[1])
