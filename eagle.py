@@ -58,6 +58,14 @@ def main():
                     print('Error on scanning port: {} >> {}'.format(port, e))
                     grabber.close()
             del TCPScanner, grabber
+        elif args.scantype == "3":
+            TCPSyn = TCPScans.TCPSYN(ipadrr, hostip); print(TCPSyn.__repr__()); TCPSyn.scanfunc()
+            for port in TCPSyn.open_ports:
+                try:
+                    print('Port {} is open and running'.format(port))
+                except Exception as e:
+                    print('Error on scanning port: {} >> {}'.format(port, e))
+            del TCPSyn
     
 
 if __name__ == '__main__':
