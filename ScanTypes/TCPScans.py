@@ -187,7 +187,7 @@ class TCPSYN:
     def addport(self, port):
         self.open_ports.append(port)
 
-    def isopen(port, response):
+    def isopen(self, port, response):
         cont = binascii.hexlify(response)
         if cont[65:68] == b"012":
             return "OK"
