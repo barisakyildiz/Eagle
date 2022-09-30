@@ -38,9 +38,8 @@ def main():
         elif args.scantype == "3":
             portrangelist = str(args.portrange).split("-")
             lowerport = int(portrangelist[0])
-            print(TCPSyn.__repr__())
             higherport = int(portrangelist[1])
-            TCPSyn = TCPScans.TCPSYN(ipadrr, hostip); TCPSyn.scanrange(lowerport, higherport)
+            TCPSyn = TCPScans.TCPSYN(ipadrr, hostip); print(TCPSyn.__repr__()); TCPSyn.scanrange(lowerport, higherport)
             for port in TCPSyn.open_ports:
                 try:
                     print('Port {} is open and running'.format(port))
