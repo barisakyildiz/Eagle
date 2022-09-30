@@ -201,10 +201,11 @@ class TCPSYN:
     
     def scanrange(self, lowerport, higherport):
         for port in range(lowerport, higherport + 1):
+            print('Working on port {}'.format(port))
             synpacket = SYNPacket(self.hostip, self.target, port)
             synpacket.generatepacket()
             response = synpacket.send_packet()
-            if self.isopen(port, response):
+            if self.isopen(port, response) == "OK":
                 self.addport(port)
     
     def scanfunc(self):
