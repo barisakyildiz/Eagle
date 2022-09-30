@@ -182,7 +182,7 @@ class TCPSYN:
         self.open_ports = []
     
     def __repr__(self):
-        return "TCP SYN Scanner started for target: {}".format(self.ip)
+        return "TCP SYN Scanner started for target: {}".format(self.target)
 
     def addport(self, port):
         self.open_ports.append(port)
