@@ -4,6 +4,7 @@ from tools import timefunc
 import argparse
 from ScanTypes import TCPScans
 from ScanTypes import TCPGrabService
+from ScanTypes import UDPScans
 
 @timefunc # Imported function for time
 def main():
@@ -45,6 +46,16 @@ def main():
                     print('Port {} is open and running'.format(port))
                 except Exception as e:
                     print('Error on scanning port: {} >> {}'.format(port, e))
+        elif args.scantype == "2":
+            portrangelist = str(args.portrange).split("-")
+            lowerport = int(portrangelist[0])
+            higherport = int(portrangelist[1])
+            UDPScanner = UDPScans.UDPScan(ipadrr, hostip); print(UDPScanner.__repr__()); UDPScanner.scanrange(lowerport, higherport)
+            for port in UDPScanner.open_ports:
+                try:
+                    print('Port {} is open and running'.format(port))
+                except Exception as e:
+                    print('Error on scanning port: {} >> {}'.format(port, e))
     else:
         if args.scantype == "1":
             TCPScanner = TCPScans.TCPConnect(ipadrr); TCPScanner.scanfunc()
@@ -66,6 +77,13 @@ def main():
                 except Exception as e:
                     print('Error on scanning port: {} >> {}'.format(port, e))
             del TCPSyn
+        elif args.scantype == "2":
+            UDPScanner = UDPScans.UDPScan(ipadrr, hostip); print(UDPScanner.__repr__()); UDPScanner.scanfunc()
+            for port in UDPScanner.open_ports:
+                try:
+                    print('Port {} is open and running'.format(port))
+                except Exception as e:
+                    print('Error on scanning port: {} >> {}'.format(port, e))
     
 
 if __name__ == '__main__':
