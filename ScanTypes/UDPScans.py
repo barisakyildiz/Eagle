@@ -15,12 +15,14 @@ class UDPScan:
 
     def isopen(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        s.settimeout(0.00001)
         try:
-            data = "lmao"
-            s.sendto(data, (self.target, self.port))
-            s.settimeout(0)
+            data = "GET /text HTTP/2.0\r\n\r\n".encode()
+            s.sendto(data, (self.target, port))
             print((s.recvfrom(1024)))
             self.addport(port)
+        except socket.timeout as e:
+            pass
         except Exception as e:
             print("An Exception Occured >> {}".format(e))
     
