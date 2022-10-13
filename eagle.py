@@ -68,7 +68,6 @@ def main():
                 except Exception as e:
                     print('Error on scanning port: {} >> {}'.format(port, e))
                     grabber.close()
-            del TCPScanner, grabber
         elif args.scantype == "3":
             TCPSyn = TCPScans.TCPSYN(ipadrr, hostip); print(TCPSyn.__repr__()); TCPSyn.scanfunc()
             for port in TCPSyn.open_ports:
@@ -76,7 +75,6 @@ def main():
                     print('Port {} is open and running'.format(port))
                 except Exception as e:
                     print('Error on scanning port: {} >> {}'.format(port, e))
-            del TCPSyn
         elif args.scantype == "2":
             UDPScanner = UDPScans.UDPScan(ipadrr, hostip); print(UDPScanner.__repr__()); UDPScanner.scanfunc()
             for port in UDPScanner.open_ports:
