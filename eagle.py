@@ -1,6 +1,4 @@
-import ipaddress
 import socket
-from sqlite3 import adapt
 from tools import timefunc
 import argparse
 from ScanTypes import TCPScans
