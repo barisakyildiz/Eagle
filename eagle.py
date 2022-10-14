@@ -1,5 +1,6 @@
 import ipaddress
 import socket
+from sqlite3 import adapt
 from tools import timefunc
 import argparse
 from ScanTypes import TCPScans
@@ -20,7 +21,21 @@ def main():
 
     hostname = socket.gethostname()
     hostip = socket.gethostbyname(hostname)
-    ipadrr = str(args.target)
+    if(str(args.target))[-1] == "/" or (str(args.target))[-2] == "/" or (str(args.target))[-3] == "/":
+        ipadrrList = str(args.target).split("/")
+        ipadrr = ipadrrList[0]
+        subnet = ipadrrList[1]
+    else:
+        ipadrr = str(args.target)
+    subnetDict = {
+        "8" : "255.0.0.0",
+        "16" : "255.255.0.0",
+        "24" : "255.255.255.0",
+        "32" : "255.255.255.255",
+        "0" : "0.0.0.0",
+        "1" : "1.0.0.0",
+        "2" : ""
+    }
     if args.portrange:
         if args.scantype == "1":
             portrangelist = str(args.portrange).split("-")
