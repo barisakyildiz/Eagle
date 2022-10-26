@@ -43,13 +43,16 @@ class Subnetting:
         self.maskParts = (self.subnetDict[str(self.subnetRange)]).split(".")
     
     def bitwise(self):
-        anded = int(self.targetParts[0]) & int(self.maskParts[3])
-        print("{} and {}".format(self.targetParts, self.maskParts))
-        return anded
+        andedList = []; anded = 0;
+        for i in range(4):
+            anded = int(self.targetParts[i]) & int(self.maskParts[i])
+            andedList.append(anded)
+        return andedList
 
 def main():
-    testClass = Subnetting("192.168.1.34", "24")
-    print("{} is AND --> {}".format(testClass.targetParts[3], testClass.bitwise()))
+    testClass = Subnetting("192.168.1.34", "21")
+    print("{} --> {}".format(testClass.targetParts, testClass.maskParts))
+    print(testClass.bitwise())
 
 if __name__ == '__main__':
     main()
