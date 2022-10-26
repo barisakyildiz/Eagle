@@ -53,8 +53,7 @@ def main():
                 for ip in networkArray:
                     TCPScanner = TCPScans.TCPConnect(ip) 
                     TCPScanner.scanrange(lowerport, higherport)
-                    print(TCPScanner.__repr__())
-                    del TCPScanner
+                    print(TCPScanner.__repr__())#yukardaki try excepti aktar
         elif args.scantype == "3":
             if flag == 0:
                 portrangelist = str(args.portrange).split("-")
@@ -117,6 +116,20 @@ def main():
                     except Exception as e:
                         print('Error on scanning port: {} >> {}'.format(port, e))
                         grabber.close()
+            else:
+                subnetClass = subnetting.Subnetting(args.target)
+                networkArray = subnetClass.subnet()
+                for ip in networkArray:
+                    TCPScanner = TCPScans.TCPConnect(ip); TCPScanner.scanfunc()
+                    print(TCPScanner.__repr__())
+                    for port in TCPScanner.open_ports:
+                        try:
+                            grabber = TCPGrabService.Grabservice(ip, port)
+                            print('Port {} is open ---> {}'.format(port, grabber.read()))
+                            grabber.close()
+                        except Exception as e:
+                            print('Error on scanning port: {} >> {}'.format(port, e))
+                            grabber.close()
         elif args.scantype == "3":
             if flag == 0:
                 TCPSyn = TCPScans.TCPSYN(ipadrr, hostip); print(TCPSyn.__repr__()); TCPSyn.scanfunc()
