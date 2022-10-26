@@ -48,16 +48,13 @@ def main():
                 portrangelist = str(args.portrange).split("-")
                 lowerport = int(portrangelist[0])
                 higherport = int(portrangelist[1])
-                subnetClass = subnetting.Subnetting(ipadrr, subnet); andedList = subnetClass.bitwise()
-                for i in range(len(andedList)):
-                    andedList[i] = str(andedList[i])
-                for i in range(4):
-                    for j in range(int(subnetClass.maskParts[i]), 255 - int(subnetClass.maskParts[i])):
-                        for k in range(j, 255):#Kombinasyonları Çöz
-                            andedList[i] = str(int(andedList[i]) + 1); ipadrr = ".".join(andedList)
-                            TCPScanner = TCPScans.TCPConnect(ipadrr) 
-                            TCPScanner.scanrange(lowerport, higherport)
-                            print(TCPScanner.__repr__())
+                subnetClass = subnetting.Subnetting(args.target)
+                networkArray = subnetClass.subnet()
+                for ip in networkArray:
+                    TCPScanner = TCPScans.TCPConnect(ip) 
+                    TCPScanner.scanrange(lowerport, higherport)
+                    print(TCPScanner.__repr__())
+                    del TCPScanner
         elif args.scantype == "3":
             if flag == 0:
                 portrangelist = str(args.portrange).split("-")
@@ -69,6 +66,20 @@ def main():
                         print('Port {} is open and running'.format(port))
                     except Exception as e:
                         print('Error on scanning port: {} >> {}'.format(port, e))
+            else:
+                portrangelist = str(args.portrange).split("-")
+                lowerport = int(portrangelist[0])
+                higherport = int(portrangelist[1])
+                subnetClass = subnetting.Subnetting(args.target)
+                networkArray = subnetClass.subnet()
+                for ip in networkArray:
+                    TCPSyn = TCPScans.TCPSYN(ip, hostip); print(TCPSyn.__repr__()); TCPSyn.scanrange(lowerport, higherport)
+                    for port in TCPSyn.open_ports:
+                        try:
+                            print('Port {} is open and running'.format(port))
+                        except Exception as e:
+                            print('Error on scanning port: {} >> {}'.format(port, e))
+
         elif args.scantype == "2":
             if flag == 0:
                 portrangelist = str(args.portrange).split("-")
@@ -80,6 +91,19 @@ def main():
                         print('Port {} is open and running'.format(port))
                     except Exception as e:
                         print('Error on scanning port: {} >> {}'.format(port, e))
+            else:
+                portrangelist = str(args.portrange).split("-")
+                lowerport = int(portrangelist[0])
+                higherport = int(portrangelist[1])
+                subnetClass = subnetting.Subnetting(args.target)
+                networkArray = subnetClass.subnet()
+                for ip in networkArray:
+                    UDPScanner = UDPScans.UDPScan(ip, hostip); print(UDPScanner.__repr__()); UDPScanner.scanrange(lowerport, higherport)
+                    for port in UDPScanner.open_ports:
+                        try:
+                            print('Port {} is open and running'.format(port))
+                        except Exception as e:
+                            print('Error on scanning port: {} >> {}'.format(port, e))
     else:
         if args.scantype == "1":
             if flag == 0:

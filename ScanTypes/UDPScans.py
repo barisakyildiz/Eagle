@@ -24,8 +24,8 @@ class UDPScan:
         except socket.timeout as e:
             pass
         except Exception as e:
-            print("An Exception Occured >> {}".format(e))
-    
+            pass
+
     def writetofile(self, filepath):
         openport = map(str, self.open_ports)
         with open(filepath, 'w') as f:

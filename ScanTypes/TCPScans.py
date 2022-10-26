@@ -201,7 +201,6 @@ class TCPSYN:
     
     def scanrange(self, lowerport, higherport):
         for port in range(lowerport, higherport + 1):
-            print('Working on port {}'.format(port))
             synpacket = SYNPacket(self.hostip, self.target, port)
             synpacket.generatepacket()
             response = synpacket.send_packet()
