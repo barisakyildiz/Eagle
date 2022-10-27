@@ -54,6 +54,14 @@ def main():
                     TCPScanner = TCPScans.TCPConnect(ip) 
                     TCPScanner.scanrange(lowerport, higherport)
                     print(TCPScanner.__repr__())#yukardaki try excepti aktar
+                    for port in TCPScanner.open_ports:
+                        try:
+                            grabber = TCPGrabService.Grabservice(ip, port)
+                            print('Port {} is open ---> {}'.format(port, grabber.read()))
+                            grabber.close()
+                        except Exception as e:
+                            print('Error on scanning port: {} >> {}'.format(port, e))
+                            grabber.close()
         elif args.scantype == "3":
             if flag == 0:
                 portrangelist = str(args.portrange).split("-")
@@ -138,6 +146,18 @@ def main():
                         print('Port {} is open and running'.format(port))
                     except Exception as e:
                         print('Error on scanning port: {} >> {}'.format(port, e))
+            else:
+                subnetClass = subnetting.Subnetting(args.target)
+                networkArray = subnetClass.subnet()
+                for ip in networkArray:
+                    TCPSyn = TCPScans.TCPSYN(ip, hostip); 
+                    print(TCPSyn.__repr__()); 
+                    TCPSyn.scanfunc()
+                    for port in TCPSyn.open_ports:
+                        try:
+                            print('Port {} is open and running'.format(port))
+                        except Exception as e:
+                            print('Error on scanning port: {} >> {}'.format(port, e))
         elif args.scantype == "2":
             if flag == 0:
                 UDPScanner = UDPScans.UDPScan(ipadrr, hostip); print(UDPScanner.__repr__()); UDPScanner.scanfunc()
@@ -146,6 +166,17 @@ def main():
                         print('Port {} is open and running'.format(port))
                     except Exception as e:
                         print('Error on scanning port: {} >> {}'.format(port, e))
+            else:
+                subnetClass = subnetting.Subnetting(args.target)
+                networkArray = subnetClass.subnet()
+                for ip in networkArray:
+                    UDPScanner = UDPScans.UDPScan(ip, hostip); print(UDPScanner.__repr__()); UDPScanner.scanfunc()
+                    for port in UDPScanner.open_ports:
+                        try:
+                            print('Port {} is open and running'.format(port))
+                        except Exception as e:
+                            print('Error on scanning port: {} >> {}'.format(port, e))
+                    
     
 
 if __name__ == '__main__':
